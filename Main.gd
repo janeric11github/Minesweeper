@@ -6,12 +6,12 @@ export(NodePath) onready var board = get_node(board) as TileMap
 # var a = 2
 # var b = "text"
 
-enum Tile { BLANK, FLAG, MINE, N0, N1, N2, N3, N4, N5, N6, N7, N8 }
+enum Tile { BLANK = 12, FLAG, MINE, N0, N1, N2, N3, N4, N5, N6, N7, N8 }
 
-const _board_size := Vector2(19, 9)
-const _mine_count := 10
+const _board_size := Vector2(30, 16)
+const _mine_count := 99
 const _tile_size := 16.0
-const _window_ratio := 4.0
+const _window_ratio := 3.0
 
 var _mine_map := MineMap.new()
 
