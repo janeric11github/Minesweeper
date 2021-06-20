@@ -1,6 +1,5 @@
-extends Node
-
 class_name HiddenMineMap
+extends Node
 
 signal tiles_revealed(index_to_tiles)
 
@@ -69,8 +68,6 @@ func generate(x: int, y: int, mine_count: int):
 		for index_y in range(y):
 			row_x_cells.append(InnerTile.BLANK)
 		_inner_tiles.append(row_x_cells)
-	
-	print(self)
 
 # returns [] if index is out of bounds
 func _get_neighbor_indices(x: int, y: int) -> Array:
@@ -80,8 +77,6 @@ func reveal(x, y):
 	var index_to_tiles = {}
 	_reveal(x, y, index_to_tiles)
 	emit_signal("tiles_revealed", index_to_tiles)
-	
-	print(self)
 
 func _reveal(x: int, y: int, index_to_tiles: Dictionary):
 	var tile = get_tile(x, y)
@@ -110,8 +105,6 @@ func toggle_flag(x, y):
 			_inner_tiles[x][y] = InnerTile.BLANK
 			var new_tile = get_tile(x, y)
 			emit_signal("tile_unflagged", x, y, new_tile)
-	
-	print(self)
 
 func chord(x, y):
 	var tile = get_tile(x, y)
@@ -139,8 +132,6 @@ func chord(x, y):
 	for neighbor_index in neighbor_indices:
 		_reveal(neighbor_index.x, neighbor_index.y, index_to_tiles)
 	emit_signal("tiles_revealed", index_to_tiles)
-	
-	print(self)
 
 func _to_string() -> String:
 	var to_print = ""

@@ -10,11 +10,17 @@ config_version=4
 
 _global_script_classes=[ {
 "base": "Node",
+"class": "BoardSettings",
+"language": "GDScript",
+"path": "res://BoardSetttings.gd"
+}, {
+"base": "Node",
 "class": "HiddenMineMap",
 "language": "GDScript",
 "path": "res://HiddenMineMap.gd"
 } ]
 _global_script_class_icons={
+"BoardSettings": "",
 "HiddenMineMap": ""
 }
 
