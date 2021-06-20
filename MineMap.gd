@@ -1,5 +1,3 @@
-class_name MineMap
-
 extends Node
 
 var _mine_count := 0

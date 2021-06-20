@@ -2,18 +2,12 @@ extends Node2D
 
 export(NodePath) onready var board = get_node(board) as TileMap
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
-
-enum Tile { BLANK = 12, FLAG, MINE, N0, N1, N2, N3, N4, N5, N6, N7, N8 }
-
-const _board_size := Vector2(30, 16)
-const _mine_count := 99
+const _board_size := Vector2(9, 9)
+const _mine_count := 10
 const _tile_size := 16.0
 const _window_ratio := 3.0
 
-var _mine_map := MineMap.new()
+var _mine_map := HiddenMineMap.new()
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -30,20 +24,4 @@ func _unhandled_input(event):
 
 func _update_board(size: Vector2, mine_count: int):
 	_mine_map.generate(size.x, size.y, mine_count)
-	print(_mine_map)
-	for x in range(_mine_map.get_size_x()):
-		for y in range(_mine_map.get_size_y()):
-			var board_tile: int
-			match _mine_map.get_tile(x, y):
-				-1: board_tile = Tile.MINE
-				0: board_tile = Tile.N0
-				1: board_tile = Tile.N1
-				2: board_tile = Tile.N2
-				3: board_tile = Tile.N3
-				4: board_tile = Tile.N4
-				5: board_tile = Tile.N5
-				6: board_tile = Tile.N6
-				7: board_tile = Tile.N7
-				8: board_tile = Tile.N8
-				_: board_tile = Tile.FLAG
-			board.set_cell(x, y, board_tile)
+	board.show_map(_mine_map)
