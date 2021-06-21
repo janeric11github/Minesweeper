@@ -4,6 +4,7 @@ extends TileMap
 enum Tile { BLANK = 12, FLAG, MINE, N0, N1, N2, N3, N4, N5, N6, N7, N8 }
 
 var _map := HiddenMineMap.new()
+var _is_map_won := false
 
 func show_map(map: HiddenMineMap):
 	_map = map
@@ -12,7 +13,7 @@ func show_map(map: HiddenMineMap):
 	_map.connect("tiles_unflagged", self, "_on_HiddenMineMap_tiles_unflagged")
 	_map.connect("won", self, "_on_HiddenMineMap_won")
 	
-	set_process_input(true)
+	_is_map_won = false
 	
 	for x in range(map.get_size_x()):
 		for y in range(map.get_size_y()):
@@ -41,7 +42,7 @@ func _on_HiddenMineMap_tiles_unflagged(index_to_tiles: Dictionary):
 
 func _on_HiddenMineMap_won():
 	_map.flag_all_unrevealed_unflagged()
-	set_process_input(false)
+	_is_map_won = true
 
 func _get_board_tile(map_tile: int) -> int:
 	match map_tile:
@@ -61,12 +62,14 @@ func _get_board_tile(map_tile: int) -> int:
 		_: return Tile.BLANK
 
 func _input(event):
+	if _is_map_won: return
 	if event.is_action_released("left_click"):
 		get_tree().set_input_as_handled()
 		var local_mouse_position = get_local_mouse_position()
 		var cell_index = _get_cell_index(local_mouse_position)
 		_map.reveal_or_chord(cell_index.x, cell_index.y)
 	elif event.is_action_released("right_click"):
+		get_tree().set_input_as_handled()
 		var local_mouse_position = get_local_mouse_position()
 		var cell_index = _get_cell_index(local_mouse_position)
 		_map.toggle_flag(cell_index.x, cell_index.y)
