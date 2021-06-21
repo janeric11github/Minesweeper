@@ -27,7 +27,7 @@ func get_size() -> int:
 
 # returns -2: out of bounds, -1: mine, other: mine count around it
 func get_tile(x: int, y: int) -> int:
-	if x > get_size_x() - 1 or y > get_size_y() - 1: return -2
+	if not is_index_valid(x, y): return -2
 	return _tiles[x][y]
 
 # x and y will be 0 if it's negative, mine_count is clampped within 0 to (x * y)
@@ -57,14 +57,14 @@ func generate(x: int, y: int, mine_count: int):
 		var mine_index_x = int(floor(flat_mine_index / y))
 		var mine_index_y = flat_mine_index % y
 		_tiles[mine_index_x][mine_index_y] = -1
-		var neighbor_indices = _get_neighbor_indices(mine_index_x, mine_index_y)
+		var neighbor_indices = get_neighbor_indices(mine_index_x, mine_index_y)
 		for neighbor_index in neighbor_indices:
 			if _tiles[neighbor_index.x][neighbor_index.y] == -1: continue
 			_tiles[neighbor_index.x][neighbor_index.y] += 1
 
 # returns [] if index is out of bounds
-func _get_neighbor_indices(x: int, y: int) -> Array:
-	if x > get_size_x() - 1 or y > get_size_y() - 1: return []
+func get_neighbor_indices(x: int, y: int) -> Array:
+	if not is_index_valid(x, y): return []
 	
 	var neighbor_indices = []
 	
@@ -81,6 +81,9 @@ func _get_neighbor_indices(x: int, y: int) -> Array:
 			neighbor_indices.append(Vector2(neighbor_x, neighbor_y))
 	
 	return neighbor_indices
+
+func is_index_valid(x: int, y: int) -> bool:
+	return x >= 0 and x < get_size_x() and y >= 0 and y < get_size_y()
 
 func _to_string() -> String:
 	var to_print = ""
