@@ -165,17 +165,24 @@ func chord(x, y):
 		_: return
 	
 	var false_flagged_indices = []
-	var flag_or_mine_count = 0
+	var flag_count = 0
+	var mine_count = 0
 	var neighbor_indices = _get_neighbor_indices(x, y)
 	for neighbor_index in neighbor_indices:
 		var neighbor_tile = get_tile(neighbor_index.x, neighbor_index.y)
-		if neighbor_tile == Tile.FLAGGED or neighbor_tile == Tile.MINE: 
-			flag_or_mine_count += 1
+		if neighbor_tile == Tile.FLAGGED:
+			flag_count += 1
+		if neighbor_tile == Tile.MINE: 
+			mine_count += 1
 		var neighbor_mine_map_tile = _mine_map.get_tile(neighbor_index.x, neighbor_index.y)
 		if neighbor_tile == Tile.FLAGGED and neighbor_mine_map_tile != -1:
 			false_flagged_indices.append(Vector2(neighbor_index.x, neighbor_index.y))
 	
-	if flag_or_mine_count != required_flag_or_mine_count: return
+	var should_chord = (
+		(flag_count + mine_count) == required_flag_or_mine_count or
+		mine_count == required_flag_or_mine_count
+		) 
+	if not should_chord: return
 	
 	# unflag false flagged neighbors for revealing later
 	for false_flagged_index in false_flagged_indices:

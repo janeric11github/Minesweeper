@@ -62,10 +62,10 @@ func _get_board_tile(map_tile: int) -> int:
 
 func _input(event):
 	if event.is_action_released("left_click"):
+		get_tree().set_input_as_handled()
 		var local_mouse_position = get_local_mouse_position()
 		var cell_index = _get_cell_index(local_mouse_position)
 		_map.reveal_or_chord(cell_index.x, cell_index.y)
-		get_tree().set_input_as_handled()
 	elif event.is_action_released("right_click"):
 		var local_mouse_position = get_local_mouse_position()
 		var cell_index = _get_cell_index(local_mouse_position)

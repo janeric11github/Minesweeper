@@ -21,15 +21,15 @@ func _unhandled_input(event):
 	if Input.is_action_just_released("left_click"):
 		if _is_mine_map_won:
 			_update_board()
-	if Input.is_action_just_pressed("restart"):
+	elif Input.is_action_just_pressed("restart"):
 		_update_board()
-	if Input.is_action_just_pressed("restart_beginner"):
+	elif Input.is_action_just_pressed("restart_beginner"):
 		_board_settings.change_to_beginner()
 		_update_board()
-	if Input.is_action_just_pressed("restart_intermediate"):
+	elif Input.is_action_just_pressed("restart_intermediate"):
 		_board_settings.change_to_intermediate()
 		_update_board()
-	if Input.is_action_just_pressed("restart_expert"):
+	elif Input.is_action_just_pressed("restart_expert"):
 		_board_settings.change_to_expert()
 		_update_board()
 
