@@ -49,23 +49,11 @@ func _get_board_tile(map_tile: int) -> int:
 		_: return Tile.BLANK
 
 func _input(event):
-	if event.is_action_pressed("left_click"):
+	if event.is_action_released("left_click"):
 		var local_mouse_position = get_local_mouse_position()
 		var cell_index = _get_cell_index(local_mouse_position)
-		var tile = _map.get_tile(cell_index.x, cell_index.y)
-		match tile:
-			HiddenMineMap.Tile.BLANK:
-				_map.reveal(cell_index.x, cell_index.y)
-			HiddenMineMap.Tile.N0,\
-			HiddenMineMap.Tile.N1,\
-			HiddenMineMap.Tile.N2,\
-			HiddenMineMap.Tile.N3,\
-			HiddenMineMap.Tile.N4,\
-			HiddenMineMap.Tile.N5,\
-			HiddenMineMap.Tile.N6,\
-			HiddenMineMap.Tile.N7:
-				_map.chord(cell_index.x, cell_index.y)
-	elif event.is_action_pressed("right_click"):
+		_map.reveal_or_chord(cell_index.x, cell_index.y)
+	elif event.is_action_released("right_click"):
 		var local_mouse_position = get_local_mouse_position()
 		var cell_index = _get_cell_index(local_mouse_position)
 		_map.toggle_flag(cell_index.x, cell_index.y)

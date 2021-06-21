@@ -16,7 +16,7 @@ var MineMap = preload("res://MineMap.gd")
 
 var _mine_map = MineMap.new()
 
-# A 2D array of InnerCell
+# A 2D array of InnerTile
 var _inner_tiles = []
 
 func is_empty() -> bool:
@@ -73,6 +73,21 @@ func generate(x: int, y: int, mine_count: int):
 func _get_neighbor_indices(x: int, y: int) -> Array:
 	return _mine_map._get_neighbor_indices(x, y)
 
+func reveal_or_chord(x, y):
+	var tile = get_tile(x, y)
+	match tile:
+		Tile.BLANK:
+			reveal(x, y)
+		Tile.N0,\
+		Tile.N1,\
+		Tile.N2,\
+		Tile.N3,\
+		Tile.N4,\
+		Tile.N5,\
+		Tile.N6,\
+		Tile.N7:
+			chord(x, y)
+
 func reveal(x, y):
 	var index_to_tiles = {}
 	_reveal(x, y, index_to_tiles)
@@ -108,25 +123,33 @@ func toggle_flag(x, y):
 
 func chord(x, y):
 	var tile = get_tile(x, y)
-	var required_flag_count: int
+	var required_flag_or_mine_count: int
 	match tile:
-		Tile.N1: required_flag_count = 1
-		Tile.N2: required_flag_count = 2
-		Tile.N3: required_flag_count = 3
-		Tile.N4: required_flag_count = 4
-		Tile.N5: required_flag_count = 5
-		Tile.N6: required_flag_count = 6
-		Tile.N7: required_flag_count = 7
+		Tile.N1: required_flag_or_mine_count = 1
+		Tile.N2: required_flag_or_mine_count = 2
+		Tile.N3: required_flag_or_mine_count = 3
+		Tile.N4: required_flag_or_mine_count = 4
+		Tile.N5: required_flag_or_mine_count = 5
+		Tile.N6: required_flag_or_mine_count = 6
+		Tile.N7: required_flag_or_mine_count = 7
 		_: return
 	
-	var flag_count = 0
+	var false_flagged_indices = []
+	var flag_or_mine_count = 0
 	var neighbor_indices = _get_neighbor_indices(x, y)
 	for neighbor_index in neighbor_indices:
 		var neighbor_tile = get_tile(neighbor_index.x, neighbor_index.y)
-		if neighbor_tile != Tile.FLAGGED: continue
-		flag_count += 1
+		if neighbor_tile == Tile.FLAGGED or neighbor_tile == Tile.MINE: 
+			flag_or_mine_count += 1
+		var neighbor_mine_map_tile = _mine_map.get_tile(neighbor_index.x, neighbor_index.y)
+		if neighbor_tile == Tile.FLAGGED and neighbor_mine_map_tile != -1:
+			false_flagged_indices.append(Vector2(neighbor_index.x, neighbor_index.y))
 	
-	if flag_count < required_flag_count: return
+	if flag_or_mine_count != required_flag_or_mine_count: return
+	
+	# unflag false flagged neighbors for revealing later
+	for false_flagged_index in false_flagged_indices:
+		toggle_flag(false_flagged_index.x, false_flagged_index.y)
 	
 	var index_to_tiles = {}
 	for neighbor_index in neighbor_indices:
