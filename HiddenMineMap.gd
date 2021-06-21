@@ -3,8 +3,10 @@ extends Node
 
 signal tiles_revealed(index_to_tiles)
 
-signal tile_flagged(x, y, tile)
-signal tile_unflagged(x, y, tile)
+signal tiles_flagged(index_to_tiles)
+signal tiles_unflagged(index_to_tiles)
+
+signal won
 
 enum Tile { UNKNOWN, BLANK, FLAGGED, MINE, N0, N1, N2, N3, N4, N5, N6, N7, N8 }
 
@@ -17,7 +19,10 @@ var MineMap = preload("res://MineMap.gd")
 var _mine_map = MineMap.new()
 
 # A 2D array of InnerTile
-var _inner_tiles = []
+var _inner_tiles := []
+
+var _revealed_non_mine_tile_count := 0
+var _unrevealed_tile_index_to_flagged := {}
 
 func is_empty() -> bool:
 	return _mine_map.is_empty()
@@ -59,6 +64,7 @@ func get_tile(x: int, y: int) -> int:
 func generate(x: int, y: int, mine_count: int):
 	_mine_map.generate(x, y, mine_count)
 	_inner_tiles = []
+	_revealed_non_mine_tile_count = 0
 	
 	if x * y == 0: return
 	
@@ -67,6 +73,7 @@ func generate(x: int, y: int, mine_count: int):
 		var row_x_cells = []
 		for index_y in range(y):
 			row_x_cells.append(InnerTile.BLANK)
+			_unrevealed_tile_index_to_flagged[Vector2(index_x, index_y)] = false
 		_inner_tiles.append(row_x_cells)
 
 # returns [] if index is out of bounds
@@ -92,6 +99,12 @@ func reveal(x, y):
 	var index_to_tiles = {}
 	_reveal(x, y, index_to_tiles)
 	emit_signal("tiles_revealed", index_to_tiles)
+	_check_won()
+
+func _check_won():
+	var total_non_mine_tile_count = get_size() - get_mine_count()
+	if _revealed_non_mine_tile_count < total_non_mine_tile_count : return
+	emit_signal("won")
 
 func _reveal(x: int, y: int, index_to_tiles: Dictionary):
 	var tile = get_tile(x, y)
@@ -103,6 +116,10 @@ func _reveal(x: int, y: int, index_to_tiles: Dictionary):
 	
 	var new_tile = get_tile(x, y)
 	
+	if new_tile != Tile.MINE:
+		 _revealed_non_mine_tile_count += 1
+	_unrevealed_tile_index_to_flagged.erase(Vector2(x, y))
+	
 	index_to_tiles[Vector2(x, y)] = new_tile
 	
 	if new_tile == Tile.N0:
@@ -110,16 +127,29 @@ func _reveal(x: int, y: int, index_to_tiles: Dictionary):
 			_reveal(neighbor_index.x, neighbor_index.y, index_to_tiles)
 
 func toggle_flag(x, y):
-	var tile = get_tile(x, y)
-	match tile:
-		Tile.BLANK:
-			_inner_tiles[x][y] = InnerTile.FLAGGED
-			var new_tile = get_tile(x, y)
-			emit_signal("tile_flagged", x, y, new_tile)
-		Tile.FLAGGED:
-			_inner_tiles[x][y] = InnerTile.BLANK
-			var new_tile = get_tile(x, y)
-			emit_signal("tile_unflagged", x, y, new_tile)
+	_toggle_flag([Vector2(x, y)])
+
+func _toggle_flag(indices: Array):
+	var newly_flagged_index_to_tiles = {}
+	var newly_unflagged_index_to_tiles = {}
+	
+	for index in indices:
+		var tile = get_tile(index.x, index.y)
+		match tile:
+			Tile.BLANK:
+				_inner_tiles[index.x][index.y] = InnerTile.FLAGGED
+				var new_tile = get_tile(index.x, index.y)
+				newly_flagged_index_to_tiles[Vector2(index.x, index.y)] = new_tile
+			Tile.FLAGGED:
+				_inner_tiles[index.x][index.y] = InnerTile.BLANK
+				var new_tile = get_tile(index.x, index.y)
+				newly_unflagged_index_to_tiles[Vector2(index.x, index.y)] = new_tile
+	
+	if not newly_flagged_index_to_tiles.empty():
+		emit_signal("tiles_flagged", newly_flagged_index_to_tiles)
+	
+	if not newly_unflagged_index_to_tiles.empty():
+		emit_signal("tiles_unflagged", newly_unflagged_index_to_tiles)
 
 func chord(x, y):
 	var tile = get_tile(x, y)
@@ -155,6 +185,14 @@ func chord(x, y):
 	for neighbor_index in neighbor_indices:
 		_reveal(neighbor_index.x, neighbor_index.y, index_to_tiles)
 	emit_signal("tiles_revealed", index_to_tiles)
+	_check_won()
+
+func flag_all_unrevealed_unflagged():
+	var unrevealed_unflagged_indices = []
+	for unrevealed_tile_index in _unrevealed_tile_index_to_flagged.keys():
+		if get_tile(unrevealed_tile_index.x, unrevealed_tile_index.y) != Tile.BLANK: continue
+		unrevealed_unflagged_indices.append(Vector2(unrevealed_tile_index.x, unrevealed_tile_index.y))
+	_toggle_flag(unrevealed_unflagged_indices)
 
 func _to_string() -> String:
 	var to_print = ""

@@ -1,3 +1,4 @@
+class_name Board
 extends TileMap
 
 enum Tile { BLANK = 12, FLAG, MINE, N0, N1, N2, N3, N4, N5, N6, N7, N8 }
@@ -7,8 +8,11 @@ var _map := HiddenMineMap.new()
 func show_map(map: HiddenMineMap):
 	_map = map
 	_map.connect("tiles_revealed", self, "_on_HiddenMineMap_tiles_revealed")
-	_map.connect("tile_flagged", self, "_on_HiddenMineMap_tile_flagged")
-	_map.connect("tile_unflagged", self, "_on_HiddenMineMap_tile_unflagged")
+	_map.connect("tiles_flagged", self, "_on_HiddenMineMap_tiles_flagged")
+	_map.connect("tiles_unflagged", self, "_on_HiddenMineMap_tiles_unflagged")
+	_map.connect("won", self, "_on_HiddenMineMap_won")
+	
+	set_process_input(true)
 	
 	for x in range(map.get_size_x()):
 		for y in range(map.get_size_y()):
@@ -23,13 +27,21 @@ func _on_HiddenMineMap_tiles_revealed(index_to_tiles: Dictionary):
 		var index = key as Vector2
 		set_cell(index.x, index.y, board_tile)
 
-func _on_HiddenMineMap_tile_flagged(x: int, y: int, map_tile: int):
-	var board_tile = _get_board_tile(map_tile)
-	set_cell(x, y, board_tile)
-	
-func _on_HiddenMineMap_tile_unflagged(x: int, y: int, map_tile: int):
-	var board_tile = _get_board_tile(map_tile)
-	set_cell(x, y, board_tile)
+func _on_HiddenMineMap_tiles_flagged(index_to_tiles: Dictionary):
+	for index in index_to_tiles:
+		var map_tile = index_to_tiles[index]
+		var board_tile = _get_board_tile(map_tile)
+		set_cell(index.x, index.y, board_tile)
+
+func _on_HiddenMineMap_tiles_unflagged(index_to_tiles: Dictionary):
+	for index in index_to_tiles:
+		var map_tile = index_to_tiles[index]
+		var board_tile = _get_board_tile(map_tile)
+		set_cell(index.x, index.y, board_tile)
+
+func _on_HiddenMineMap_won():
+	_map.flag_all_unrevealed_unflagged()
+	set_process_input(false)
 
 func _get_board_tile(map_tile: int) -> int:
 	match map_tile:
@@ -53,6 +65,7 @@ func _input(event):
 		var local_mouse_position = get_local_mouse_position()
 		var cell_index = _get_cell_index(local_mouse_position)
 		_map.reveal_or_chord(cell_index.x, cell_index.y)
+		get_tree().set_input_as_handled()
 	elif event.is_action_released("right_click"):
 		var local_mouse_position = get_local_mouse_position()
 		var cell_index = _get_cell_index(local_mouse_position)
