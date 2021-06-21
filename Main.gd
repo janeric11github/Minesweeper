@@ -1,6 +1,7 @@
 extends Node2D
 
 export(NodePath) onready var board = get_node(board) as Board
+export(NodePath) onready var win_sound_player = get_node(win_sound_player) as AudioStreamPlayer2D
 
 const _tile_size := 16.0
 const _window_ratio := 3.0
@@ -45,3 +46,4 @@ func _update_board():
 
 func _on_HiddenMineMap_won():
 	_is_mine_map_won = true
+	win_sound_player.play()
