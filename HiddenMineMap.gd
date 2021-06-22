@@ -228,6 +228,10 @@ func _update_pressed_tile_indices():
 		InnerTile.PRESSED: _set_pressed_tile_indices([_pressed_index])
 		InnerTile.FLAGGED: _set_pressed_tile_indices([])
 		InnerTile.REVEALED:
+			var mine_map_tile = _mine_map.get_tile(_pressed_index.x, _pressed_index.y)
+			if mine_map_tile == -1: 
+				_set_pressed_tile_indices([])
+				return
 			var new_pressed_tile_indices = []
 			for neighbor_index in get_neighbor_indices(_pressed_index.x, _pressed_index.y):
 				var neighbor_inner_tile = _inner_tiles[neighbor_index.x][neighbor_index.y]
